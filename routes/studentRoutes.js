@@ -3,7 +3,7 @@ const routes = express.Router();
 
 const studentController = require('../controller/studentController');
 
-routes.get('/student', studentController.getStudent);
-routes.post('/student/create', studentController.createStudent);
+routes.get('/', studentController.getStudent);
+routes.post('/create', studentController.createStudent);
 
 module.exports = routes;
