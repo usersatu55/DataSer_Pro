@@ -15,24 +15,32 @@ exports.getStudent = async (req , res) => {
 }
 
 exports.createStudent = async (req, res) => {
-    const { student_id, first_name, last_name, email } = req.body;
+    const { student_id, first_name, last_name, email , password } = req.body;
   
-    if (!student_id || !first_name || !last_name || !email) {
+    if (!student_id || !first_name || !last_name || !email || !password) {
       return res.status(400).json({
         message: "Bad Request",
       });
     }
   
     try {
+
+      const checkstudent = await Student.findOne({student_id: student_id});
+
+      if(checkstudent){
+        return res.status(401).json({
+          message:"Student already exists",
+        })
+      }
+
       const newStudent = new Student({
-        students: [
-          {
+       
             student_id, 
             first_name,
             last_name,
-            email
-          }
-        ]
+            email,
+            password
+         
       });
   
       await newStudent.save();
@@ -42,3 +50,40 @@ exports.createStudent = async (req, res) => {
       res.status(500).json({ message: err.message });
     }
 };
+
+exports.deleteStudent = async (req, res) => {
+
+  const {student_id} = req.query
+
+  if(!student_id){
+    
+    return res.status(400).json({
+      message:"Bad request",
+    })
+
+  }
+
+  try{
+
+    const delstudent = await Student.findOneAndDelete({student_id: student_id})
+
+    if(!delstudent){
+      return res.status(404).json({
+        message:"Student not found"
+      })
+    }
+    return res.status(200).json({
+
+      message:"Delete Student Succesfuly"
+
+    })
+
+
+  }catch(err){
+    res.status(500).json({
+      message:err.message
+    })
+  }
+
+}
+

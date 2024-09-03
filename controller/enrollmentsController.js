@@ -1,1 +1,0 @@
-const  Enrollment = require('../schema/enrollmentsSchema')
