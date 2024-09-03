@@ -77,7 +77,7 @@ exports.deleteTeacher = async (req, res) => {
         const delteacher = await Teacher.findOneAndDelete({teacher_id: teacher_id})
 
         if(!delteacher){
-            return res.status(404).json({
+            return res.status(400).json({
                 message: "Teacher not found"
             })
         }
