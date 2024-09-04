@@ -1,7 +1,6 @@
 const Student = require('../schema/studentSchema')
 const mongoose = require('mongoose');
-const { ObjectId } = mongoose.Types; 
-
+const bcrypt = require('bcryptjs');
 
 exports.getStudent = async (req , res) => {
 
@@ -15,41 +14,50 @@ exports.getStudent = async (req , res) => {
 }
 
 exports.createStudent = async (req, res) => {
-    const { student_id, first_name, last_name, email , password } = req.body;
   
-    if (!student_id || !first_name || !last_name || !email || !password) {
+  const { student_id, first_name, last_name, email, password } = req.body;
+
+  if (!student_id || !first_name || !last_name || !email || !password) {
       return res.status(400).json({
-        message: "Bad Request",
+          message: 'Bad request',
       });
-    }
-  
-    try {
+  }
 
-      const checkstudent = await Student.findOne({student_id: student_id});
+  try {
+      const checkstudent = await Student.findOne({ student_id: student_id });
 
-      if(checkstudent){
-        return res.status(401).json({
-          message:"Student already exists",
-        })
+      if (checkstudent) {
+          return res.status(401).json({
+              message: 'Student ID already exists',
+          });
       }
 
-      const newStudent = new Student({
-       
-            student_id, 
-            first_name,
-            last_name,
-            email,
-            password
-         
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const newstudent = new Student({
+          student_id,
+          first_name,
+          last_name,
+          email,
+          password: hashedPassword,
       });
-  
-      await newStudent.save();
-  
-      res.status(200).json(newStudent);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
+
+      const savestudent = await newstudent.save();
+
+      return res.status(200).json({
+          message: "Create Student successfully",
+          student: savestudent
+      });
+
+  } catch (err) {
+      
+      return res.status(500).json({
+          message: err.message
+      });
+  }
 };
+
 
 exports.deleteStudent = async (req, res) => {
 
@@ -96,4 +104,55 @@ exports.updateStudent = async (req , res) =>{
 
 
 
+}
+
+
+exports.createAraayStudents = async (req, res) => {
+  const students = req.body;
+
+  
+  if (!students || !Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({ message: "No students data provided" });
+  }
+
+  try {
+      const studentsToInsert = [];
+
+      for (const student of students) {
+          const { student_id, first_name, last_name, email, password } = student;
+
+          
+          if (!student_id || !first_name || !last_name || !email || !password) {
+              return res.status(400).json({ message: "All fields are required for each student" });
+          }
+
+         
+          const existingStudent = await Student.findOne({ $or: [{ email }, { student_id }] });
+          if (existingStudent) {
+              return res.status(400).json({ message: `Student with email ${email} or ID ${student_id} already exists` });
+          }
+
+        
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash(password, salt);
+
+          studentsToInsert.push({
+              student_id,
+              first_name,
+              last_name,
+              email,
+              password: hashedPassword
+          });
+      }
+
+      const insertedStudents = await Student.insertMany(studentsToInsert);
+
+      res.status(201).json({ 
+        message: "Students created successfully", 
+        students: insertedStudents 
+      });
+
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
 }

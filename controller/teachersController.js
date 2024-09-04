@@ -1,6 +1,6 @@
 const  Teacher  = require('../schema/teacherSchema')
 const mongoose = require('mongoose');
-
+const bcrypt = require('bcryptjs');
 
 
 exports.getTeacher = async (req , res) => {
@@ -34,7 +34,8 @@ exports.createTeacher = async (req , res) =>{
                 message: "Teacher already exists"
             })
         }
-        
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
         
         const newteacher = new Teacher({
         
@@ -43,7 +44,7 @@ exports.createTeacher = async (req , res) =>{
                     first_name,
                     last_name,
                     email,
-                    password,
+                    password:hashedPassword,
                     department
                 
             
@@ -51,7 +52,10 @@ exports.createTeacher = async (req , res) =>{
 
         savestudent = await newteacher.save()
         
-        return res.status(200).json(savestudent)
+        return res.status(200).json({
+            message:"Create Teacher SuccesFuly",
+            "Teacher":savestudent
+        })
     
     }catch(err){
         return res.status(500).json({
@@ -123,6 +127,85 @@ exports.updateTeacher = async (req , res) =>{
         return res.status(500).json({
             message:err.message
         })
+
+    }
+}
+
+
+
+exports.createArrayTeacher = async (req, res) => {
+    const teachers = req.body
+
+    if(!teachers || !Array.isArray(teachers) || teachers.length === 0){
+
+        return res.status(401).json({
+            message:"Bad request"
+        })
+
+    }
+
+    try{
+
+        const teachertoinsert = []
+
+        for(const teacher of teachers){
+
+            const {teacher_id , first_name , last_name , email ,password ,  department} = teacher
+
+            if( !teacher_id || !first_name || !last_name || !email || !password || department ){
+
+                return res.status(400).json({
+                    message: "Bad request"
+                })
+
+            }
+
+
+            const checkteacher = Teacher.findOne({$or : [{teacher_id} , {email}]})
+
+            if(checkteacher){
+
+                return res.status(400).json({
+                    message:`Student with email ${email} or ID ${student_id} already exists`
+                })
+                 
+
+            }
+
+            const salt = await bcrypt.genSalt(10)
+            const hashpassword = await bcrypt.hashPassword(password , salt) 
+
+
+
+
+            teachertoinsert.push({
+                teacher_id,
+                first_name,
+                last_name,
+                email,
+                password:hashpassword,
+                department
+            })
+
+            const saveteacher = await teachertoinsert.save()
+
+            return res.status(200).json({
+                message:"Create Teacher Suceesfuly",
+                "Teacher":saveteacher
+            })
+
+
+        }
+
+
+
+    }catch(err){
+
+
+        return res.status(500).json({
+            message:err.message
+        })
+
 
     }
 }
