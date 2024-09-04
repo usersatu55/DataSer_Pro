@@ -95,3 +95,34 @@ exports.deleteTeacher = async (req, res) => {
 
     }
 }
+
+exports.updateTeacher = async (req , res) =>{
+    const {teacher_id} = req.query
+    const { first_name, last_name, email, password, department } = req.body;
+
+    if(!teacher_id){
+        return res.status(400).json({
+            message:"Bad request"
+        })
+    }
+
+    const updatestudent = {}
+
+    if(first_name) updatestudent.first_name = first_name
+    if(last_name) updatestudent.last_name = last_name
+    if(email) updatestudent.email = email
+    if(password) updatestudent.password = password
+    if(department) updatestudent.department = department
+
+    try{
+
+        
+
+    }catch(err){
+
+        return res.status(500).json({
+            message:err.message
+        })
+
+    }
+}

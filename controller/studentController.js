@@ -87,3 +87,13 @@ exports.deleteStudent = async (req, res) => {
 
 }
 
+
+exports.updateStudent = async (req , res) =>{
+
+
+  const {student_id} = req.query
+  const  {first_name , last_name ,email , password} = req.body
+
+
+
+}

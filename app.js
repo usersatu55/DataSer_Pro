@@ -20,8 +20,6 @@ app.use('/teacher',teacherRoutes)
 
 condb.connectToDB();
 
-
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT,'localhost', () => {
