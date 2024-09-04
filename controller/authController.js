@@ -1,20 +1,72 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = 'your_jwt_secret_key'; 
+const bcrypt = require('bcryptjs');
 
-module.exports = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+const  Teacher  = require('../schema/teacherSchema')
+const Student = require('../schema/studentSchema')
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded; 
-      next();
-    } catch (err) {
-      return res.status(401).json({ message: 'Invalid token' });
+require('dotenv').config({ path: '.env.dev' });
+const JWT_SECRET = process.env.JWT_SECRET;
+
+exports.login = async (req , res) =>{
+
+    const {email , password} = req.body
+
+    if(!email || !password){
+
+        return res.status(400).json({
+            message:"Bad Request"
+        })
     }
-  } else {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-};
+
+    try{
+
+        const student = await Student.findOne({email: email})
+
+        if(student && bcrypt.compareSync(password , student.password)){
+            const token = jwt.sign(
+                
+                { id: student._id, userType: 'student' },
+                JWT_SECRET,
+                { expiresIn: '1h' }
+            )
+
+            return res.status(200).json({
+                token: token,
+                userType: 'student',
+                "user":student
+            })
+        }
+
+
+        const teacher = await Teacher.findOne({email:email})
+
+        if(teacher && bcrypt.compareSync(password , teacher.password)){
+            const token = jwt.sign(
+                {id : teacher._id , userType:'teacher'},
+                JWT_SECRET,
+                {expiresIn: '1h'}
+            )
+
+            return res.status(200).json({
+                token:token,
+                userType:'teacher',
+                "user":teacher
+            })
+        }
+        
+        return res.status(404).json({
+            message:"Not Found"
+        })
+
+
+    }catch(err){
+
+
+        return res.status(500).json({
+            message: err.message
+        })
+
+    }
+
+}
 

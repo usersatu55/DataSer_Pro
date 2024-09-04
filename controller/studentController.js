@@ -41,6 +41,8 @@ exports.createStudent = async (req, res) => {
           last_name,
           email,
           password: hashedPassword,
+          deletedAt:null
+        
       });
 
       const savestudent = await newstudent.save();

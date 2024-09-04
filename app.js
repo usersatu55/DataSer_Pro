@@ -5,6 +5,7 @@ const condb = require('./server/condb');
 const studentRoutes = require('./routes/studentRoutes')
 const courseRoutes = require('./routes/coursesRoutes')
 const teacherRoutes = require('./routes/teachersRoutes')
+const authRoutes = require('./routes/authRoutes')
 
 dotenv.config({ path: './.env.dev' });
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/student',studentRoutes)
 app.use('/courses',courseRoutes)
 app.use('/teacher',teacherRoutes)
+app.use('/auth' , authRoutes)
 
 
 
