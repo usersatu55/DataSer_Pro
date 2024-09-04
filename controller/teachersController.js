@@ -110,15 +110,38 @@ exports.updateTeacher = async (req , res) =>{
         })
     }
 
-    const updatestudent = {}
 
-    if(first_name) updatestudent.first_name = first_name
-    if(last_name) updatestudent.last_name = last_name
-    if(email) updatestudent.email = email
-    if(password) updatestudent.password = password
-    if(department) updatestudent.department = department
+
+    const updateTeacher = {}
+
+    if(first_name) updateTeacher.first_name = first_name
+    if(last_name) updateTeacher.last_name = last_name
+    if(email) updateTeacher.email = email
+    if(password) updateTeacher.password = password
+    if(department) updateTeacher.department = department
 
     try{
+
+        const Teacherupdate = await Teacher.findOneAndUpdate(
+            {teacher_id},
+            updateTeacher,
+
+            {new:true , runValidators:true}
+        ) 
+
+        if(!Teacherupdate){
+
+            return res.status(404).json({
+                message:"Teacher Not Found"
+            })
+
+        }
+
+
+        return res.status(200).json({
+            message:"Update Succesfuly",
+            "Teacher":Teacherupdate
+        })
 
         
 
