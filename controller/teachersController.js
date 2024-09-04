@@ -45,7 +45,8 @@ exports.createTeacher = async (req , res) =>{
                     last_name,
                     email,
                     password:hashedPassword,
-                    department
+                    department,
+                    deletedAt:null
                 
             
         })
@@ -219,8 +220,6 @@ exports.createArrayTeacher = async (req, res) => {
 
 
         }
-
-
 
     }catch(err){
 
