@@ -17,7 +17,7 @@ exports.getCoures = async (req , res) =>{
 
 exports.createCourse = async (req , res) =>{
 
-  
+  const {} = req.body
 
 
 }

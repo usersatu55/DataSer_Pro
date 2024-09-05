@@ -7,7 +7,9 @@ const coursesSchema = new mongoose.Schema({
     instructor_fname: { type: String, required: true },
     instructor_lname: { type: String, required: true },
     email: { type: String, required: true },
-    deletedAt: { type: Date } 
-  }, { timestamps: true });
+    days: { type: [String], required: true }, 
+    time_slots: { type: [String], required: true } 
+
+});
   
 module.exports = mongoose.model('Course' , coursesSchema , 'courses');
