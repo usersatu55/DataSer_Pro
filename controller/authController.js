@@ -24,6 +24,7 @@ exports.login = async (req, res) => {
                 {
                     id: student._id,
                     userType: 'student',
+                    student_id:student.student_id,
                     first_name: student.first_name, 
                     last_name: student.last_name,   
                     email: student.email           
@@ -39,7 +40,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        // ตรวจสอบอาจารย์
+       
         const teacher = await Teacher.findOne({ email: email });
 
         if (teacher && bcrypt.compareSync(password, teacher.password)) {
