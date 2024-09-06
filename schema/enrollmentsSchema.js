@@ -1,14 +1,10 @@
 const mongoose = require('mongoose');
 
 const enrollmentsSchema = new mongoose.Schema({
-    enrollments:
-    [
-        {
-            student_id: { type: 'string', required: true},
-            course_id: { type: 'string', required: true},
-            enrollment_date:{type: 'date', required: true}
-        }
-    ]
-})
+   
+    student_id: { type: 'string', required: true},
+    course_id: { type: 'string', required: true},
+    deletedAt: { type: Date } 
+}, { timestamps: true });
 
 module.exports = mongoose.model('Enrollment', enrollmentsSchema);

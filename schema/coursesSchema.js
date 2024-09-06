@@ -8,7 +8,7 @@ const coursesSchema = new mongoose.Schema({
     instructor_lname: { type: String, required: true },
     email: { type: String, required: true },
     course_days: { type: [String], required: true }, 
-    course_time_slots: { type: [String], required: true } 
+    course_time: { type: [String], required: true } 
 
 });
   

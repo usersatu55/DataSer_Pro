@@ -113,13 +113,36 @@ exports.updateStudent = async (req , res) =>{
 
     const updatestudent = {}
 
-    if(first_name) updatestudent.first_name = first_name
-    if(last_name) updatestudent.last_name = last_name
-    if(email) updatestudent.email = email
-    if(password) updatestudent.password = password
+    if(first_name && first_name.trim() !== "") updatestudent.first_name = first_name
+    if(last_name && last_name.trim() !== "") updatestudent.last_name = last_name
+    if(email && email.trim() !== "") updatestudent.email = email
+    if(password && password.trim() =="")updatestudent.password = password
 
 
     try{
+
+      const newstudent = await Student.findOneAndUpdate(
+        {student_id},
+        updatestudent,
+
+        {new:true , runValidators :true}
+      )
+
+      if( !newstudent){
+
+        return res.status(404).json({
+
+          message : "Student not found",
+
+        })
+
+      }
+
+      return res.status(200).json({
+
+        message : "Student updated successfully",
+
+      })
 
 
     }catch(err){
