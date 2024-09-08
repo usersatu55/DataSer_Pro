@@ -37,146 +37,121 @@ exports.getEnrollments = async (req , res) =>{
 
 exports.createEnrollments = async (req, res) => {
 
+    const { course_code, student_id, student_fname, student_lname, student_email } = req.body;
 
-    const {course_id ,student_id ,student_fname,student_lname , student_email} = req.body
-
-    if(!course_id || !student_id || !student_fname || !student_lname , !student_email){
-
+   
+    if (!course_code || !student_id || !student_fname || !student_lname || !student_email) {
         return res.status(400).json({
-
-            message : "Bad request",
-
-        })
-
+            message: "Bad request",
+        });
     }
 
+    try {
+        
+        const checkEnrollment = await Enrollments.findOne({ course_code, student_id });
 
-    try{
-
-        const checkenrollment = await Enrollments.findOne({course_id : course_id, student_id : student_id})
-
-        if(checkenrollment){
-
+        if (checkEnrollment) {
             return res.status(400).json({
-
-                message : "The student is already enrolled in this course",
-
-            })
-
+                message: "The student is already enrolled in this course",
+            });
         }
 
-        const newenrollment = new Enrollment({
-            course_id,
+        
+        const newEnrollment = new Enrollments({
+            course_code,
             student_id,
             student_fname,
             student_lname,
-            student_email
-        })
+            student_email,
+            deletedAt:null
+        });
 
-        const savedEnrollment = await newenrollment.save()
+        const savedEnrollment = await newEnrollment.save();
 
         return res.status(200).json({
+            message: "Enrollment saved successfully",
+            Enrollment: savedEnrollment,
+        });
 
-            message : "Enrollment saved successfully",
-            "Enrollment": savedEnrollment
-
-        })
-
-
-    }catch(err){
-
+    } catch (err) {
         return res.status(500).json({
-
-            message: err.message
-
-        })
-
+            message: err.message,
+        });
     }
+};
 
-}
 
 exports.createEnrollmentsArray = async (req, res) => {
-    
-    const enrollments = req.body
-    
-    if(!enrollment || !Array.isArray(enrollment) || enrollments.length === 0){
 
+    const enrollments = req.body;
+
+    
+    if (!enrollments || !Array.isArray(enrollments) || enrollments.length === 0) {
         return res.status(400).json({
-
             message: "Bad request",
-
-        })
-
+        });
     }
 
+    try {
+        const enrollmentsToinsert = [];
 
-    try{
+        
+        for (const enrollment of enrollments) {
+            const { course_code, student_id, student_fname, student_lname, student_email } = enrollment;
 
-        const enrollmentsToinsert = []
-
-        for(const enrollment of enrollments){
-
-            const {course_id ,student_id ,student_fname,student_lname , student_email} = enrollment
-
-            if(!course_id || !student_id || !student_fname || !student_lname || !student_email){
-
-                return res.status(400).json({
-
-                    message :"All fields are required"
-
-                })
-
-            }
-
-            const checkEnrollment = await Enrollment.findOne({ course_id, student_id });
             
-            if (checkEnrollment) {
-                
+            if (!course_code || !student_id || !student_fname || !student_lname || !student_email) {
                 return res.status(400).json({
-                    message: `Student ${student_id} is already enrolled in course ${course_id}`,
-                
+                    message: "All fields are required",
                 });
-            
             }
 
+            
+            const checkEnrollment = await Enrollments.findOne({ course_code, student_id });
+
+            if (checkEnrollment) {
+                return res.status(400).json({
+                    message: `Student ${student_id} is already enrolled in course ${course_code}`,
+                });
+            }
+
+          
             enrollmentsToinsert.push({
-
-                course_id ,
-                student_id ,
+                course_code,
+                student_id,
                 student_fname,
-                student_lname , 
-                student_email
-
-
-            })
-
+                student_lname,
+                student_email,
+            });
         }
 
-        if(enrollmentToinsert.length > 0){
-
-            const saveEnrollment = await Enrollment.insertMany(enrollmentsToinsert)
+        
+        if (enrollmentsToinsert.length > 0) {
+            const saveEnrollment = await Enrollments.insertMany(enrollmentsToinsert);
 
             return res.status(200).json({
-
-                message: "Create Enrollment successfully",
-                "Enrollment":saveEnrollment
-
-            })
-
+                message: "Enrollments created successfully",
+                Enrollment: saveEnrollment,
+            });
+        } else {
+            return res.status(400).json({
+                message: "No valid enrollments to insert",
+            });
         }
 
-
-    }catch(err){
-
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message,
+        });
     }
+};
 
-}
 
 exports.deleteEnrollment = async (req ,res) => {
 
-    const {course_id , student_id} = req.query
+    const {course_code , student_id} = req.query
 
-    if(!course_id || !student_id){
+    if(!course_code || !student_id){
 
         return res.status(400).json({
 
@@ -188,7 +163,7 @@ exports.deleteEnrollment = async (req ,res) => {
 
     try{
 
-        const checkenrollment = await Enrollments.findOne({course_id} , {student_id})
+        const checkenrollment = await Enrollments.findOne({course_code} , {student_id})
 
         if(!checkenrollment){
 

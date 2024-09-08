@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const enrollmentsSchema = new mongoose.Schema({
    
     
-    course_id: { type: 'string', required: true},
+    course_code: { type: 'string', required: true},
     student_id: { type: 'string', required: true},
     student_fname:{ type: 'string', required: true},
     student_lname:{ type: 'string', required: true},
