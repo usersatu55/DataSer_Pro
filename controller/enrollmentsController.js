@@ -4,9 +4,11 @@ const Enrollments = require('../schema/enrollmentsSchema')
 
 exports.getEnrollments = async (req , res) =>{
 
+    const {student_id} = req.user
+
 
     try{
-        const getEnrollments = await Enrollments.find()
+        const getEnrollments = await Enrollments.find({student_id})
 
         if(!getEnrollments){
 
