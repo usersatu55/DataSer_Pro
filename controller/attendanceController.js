@@ -142,5 +142,36 @@ exports.deleteAttendance = async(req , res) =>{
 
     }
 
+    try{
+
+        const deleteAttendance = await Attendance.findOneAndDelete({student_id} , {course_code})
+
+
+        if(!deleteAttendance){
+
+            return res.status(404).json({
+
+                message: "Attendance not found"
+
+            })
+
+        }
+
+        return res.status(200).json({
+
+            "Attendance":deleteAttendance
+
+        })
+
+
+    }catch(err){
+
+        return res.status(500).json({
+
+            message : err.message
+        })
+
+    }
+
 }
 
