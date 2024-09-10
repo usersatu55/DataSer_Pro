@@ -4,11 +4,9 @@ const Enrollments = require('../schema/enrollmentsSchema')
 
 exports.getEnrollments = async (req , res) =>{
 
-    const {student_id} = req.user
-
-
+   
     try{
-        const getEnrollments = await Enrollments.find({student_id})
+        const getEnrollments = await Enrollments.find()
 
         if(!getEnrollments){
 
@@ -107,7 +105,7 @@ exports.createEnrollmentsArray = async (req, res) => {
                     message: "All fields are required",
                 });
             }
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
             
             const checkEnrollment = await Enrollments.findOne({ course_code, student_id });
 
@@ -192,6 +190,44 @@ exports.deleteEnrollment = async (req ,res) => {
         return res.status(500).json({
 
             message: err.message
+
+        })
+
+    }
+
+}
+
+
+exports.getEnrollmentsByStudent = async (req, res) => {
+
+    const {student_id} = req.user
+
+    try{
+
+        const getEnrollment = await Enrollments.find({student_id})
+
+        if(!getEnrollment){
+
+            return res.status(404).json({
+
+                message : "Student Not Found"
+
+            })
+
+        }
+
+        return res.status(200).json({
+
+            "Enrollments": getEnrollment
+
+        })
+
+
+    }catch(err){
+
+        return res.status(500).json({
+
+            message:err.message
 
         })
 
