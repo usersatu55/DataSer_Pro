@@ -79,10 +79,40 @@ exports.getAttendanceBy = async(req , res) => {
 
 exports.createAttendance = async (req , res) =>{
 
+    const {course_code} = req.query
+    const {student_id , first_name :student_fname  , last_name: student_lname , email} = req.user
 
-    const {student_id , student_fname : first_name , student_lastname : last_name } = req
+    if(!course_code){
+
+        return res.status(400).json({
+
+            message : "Bad request"
+
+        }) 
+
+    }
 
     try{
+
+        const saveAttendance = new Attendance(
+            {
+                course_code,
+                student_id,
+                student_fname,
+                student_lname,
+                email,
+                deletedAt:null
+            }
+        )
+
+        const attendanceSave = await saveAttendance.save()
+
+        return res.status(200).json({
+
+            message : "Create Attendance Succesfuly",
+            "Attendance" : attendanceSave 
+
+        })
 
 
     }catch(err){
@@ -97,3 +127,20 @@ exports.createAttendance = async (req , res) =>{
 
 
 }
+
+exports.deleteAttendance = async(req , res) =>{
+
+    const {student_id , course_code} = req.query
+
+    if(!student_id || !course_code){
+
+        return res.status(400).json({
+
+            message : "Bad request"
+
+        })
+
+    }
+
+}
+

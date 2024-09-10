@@ -7,7 +7,7 @@ const attendanceSchema = new mongoose.Schema({
         student_id:{type: 'string' , required: true},
         student_fname:{type: 'string', required : true},
         studnet_lname:{type: 'string', required : true},
-        date :{type:'date',required: true},
+        email:{type: 'string', required : true},
         status: {type:'string' , required: true},
         deletedAt: { type: Date } 
 }, { timestamps: true });
