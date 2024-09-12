@@ -1,4 +1,5 @@
 const Enrollments = require('../schema/enrollmentsSchema')
+const Course = require('../schema/coursesSchema')
 
 
 
@@ -200,37 +201,36 @@ exports.deleteEnrollment = async (req ,res) => {
 
 exports.getEnrollmentsByStudent = async (req, res) => {
 
-    const {student_id} = req.user
+    const { student_id } = req.user;
 
-    try{
+    try {
+       
+        const getEnrollment = await Enrollments.find({ student_id });
 
-        const getEnrollment = await Enrollments.find({student_id})
-
-        if(!getEnrollment){
-
+        if (!getEnrollment || getEnrollment.length === 0) {
             return res.status(404).json({
-
-                message : "Student Not Found"
-
-            })
-
+                message: "Enrollments not found for this student"
+            });
         }
 
+        
+        const enrichedEnrollments = await Promise.all(
+            getEnrollment.map(async (enrollment) => {
+                const course = await Course.findOne({ course_code: enrollment.course_code });
+                return {
+                    ...enrollment._doc,  
+                    course_name: course ? course.course_name : "Course not found"
+                };
+            })
+        );
+
         return res.status(200).json({
+            "Enrollments": enrichedEnrollments
+        });
 
-            "Enrollments": getEnrollment
-
-        })
-
-
-    }catch(err){
-
+    } catch (err) {
         return res.status(500).json({
-
-            message:err.message
-
-        })
-
+            message: err.message
+        });
     }
-
 }

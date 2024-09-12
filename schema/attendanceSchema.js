@@ -9,6 +9,6 @@ const attendanceSchema = new mongoose.Schema({
         studnet_lname:{type: 'string', required : true},
         email:{type: 'string', required : true},
         status: {type:'string' , required: true},
-        deletedAt: { type: Date } 
-}, { timestamps: true });
+        date: { type: Date } 
+});
 module.exports = mongoose.model('Attendance' , attendanceSchema , 'attendances')

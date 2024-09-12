@@ -1,5 +1,6 @@
 const { get } = require('mongoose')
 const  Attendance= require('../schema/attendanceSchema')
+const Course = require('../schema/coursesSchema')                           
 
 exports.getAttendance = async (req , res) => {
 
@@ -174,4 +175,53 @@ exports.deleteAttendance = async(req , res) =>{
     }
 
 }
+
+exports.openAttendance = async (req, res) => {
+    const { course_code } = req.body;
+
+    if (!course_code) {
+        return res.status(400).json({
+            message: "Bad request"
+        });
+    }
+
+    try {
+       
+        const course = await Course.findOne({ course_code });
+
+        if (!course) {
+            return res.status(404).json({
+                message: "Course not found"
+            });
+        }
+
+        
+        if (course.attendance_status === 'open') {
+            return res.status(400).json({
+                message: "Attendance is already open for this course"
+            });
+        }
+
+      
+        course.attendance_status = 'open';
+        await course.save();
+
+       
+        setTimeout(async () => {
+            course.attendance_status = 'closed';
+            await course.save();
+            console.log(`Attendance for course ${course_code} is now closed`);
+        }, 600000);  
+
+        return res.status(200).json({
+            message: `Attendance for course ${course_code} is now open for 10 minutes`
+        });
+
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
+};
+
 
