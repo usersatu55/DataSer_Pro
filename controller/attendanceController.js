@@ -3,47 +3,47 @@ const  Attendance= require('../schema/attendanceSchema')
 const Course = require('../schema/coursesSchema')   
 const Enrollments = require('../schema/enrollmentsSchema')                        
 
-exports.getAttendance = async (req , res) => {
+exports.getAttendance = async (req, res) => {
+    try {
+        const getattendance = await Attendance.find();
 
-
-    try{
-
-        const getattendance = await Attendance.find()
-
-        if(!getattendance){
-
+        if (!getattendance) {
             return res.status(404).json({
-
                 message: 'Attendance not found'
-            
-            })
-
-            
+            });
         }
-        return res.status(200).json({
 
-            Attendance : getattendance
-
-        })
-
-
-
-    }catch(err){
         
+        const formattedAttendance = getattendance.map(att => {
+            return {
+                ...att._doc,
+                date: new Date(att.date).toLocaleString('th-TH', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                })
+            };
+        });
+
+        return res.status(200).json({
+            Attendance: formattedAttendance
+        });
+
+    } catch (err) {
         return res.status(500).json({
-
             message: err.message
-
-        })
-
+        });
     }
-
 }
+
 
 exports.getAttendanceBy = async(req , res) => {
 
 
-    const {student_id} = req.user
+    const { student_id } = req.user;
 
     try{
 
