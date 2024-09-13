@@ -176,7 +176,7 @@ exports.deleteEnrollment = async (req ,res) => {
 
         }
 
-        const deleteEnrollment = await Enrollments.findOneAndDelete({course_id} , {student_id})
+        const deleteEnrollment = await Enrollments.findOneAndDelete({course_code} , {student_id})
 
         return res.status(200).json({
 

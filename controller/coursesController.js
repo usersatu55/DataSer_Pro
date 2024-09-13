@@ -96,7 +96,7 @@ exports.deleteCourse = async (req , res) =>{
 exports.updateCourse = async (req, res) => {
 
     const { course_code } = req.query; 
-    const { new_course_code, course_name, course_days, course_time } = req.body;  
+    const {new_course_code, course_name , course_time_slots} = req.body;  
 
     if (!course_code) {
         return res.status(400).json({
@@ -109,7 +109,6 @@ exports.updateCourse = async (req, res) => {
    
     if (new_course_code && new_course_code.trim() !== "") courseupdate.course_code = new_course_code;
     if (course_name && course_name.trim() !== "") courseupdate.course_name = course_name;
-    if (course_days && course_days.trim() !== "") courseupdate.course_days = course_days;
     if (course_time_slots && course_time_slots.trim() !== "") courseupdate.course_time = course_time;
 
     try {

@@ -291,3 +291,54 @@ exports.checkInAttendance = async (req, res) => {
         });
     }
 };
+
+exports.updateAttendance = async (req , res) => {
+
+    const { course_code, student_id , status} = req.body;
+
+    try{
+
+        const findstudent = await Attendance.findOne({ course_code, student_id})
+
+        if(!findstudent){
+
+            return res.status(404).json({
+
+                message : "Not Found"
+
+            })
+
+
+        }
+
+        const saveatten = await Attendance.findOneAndUpdate(
+
+            {course_code , student_id},
+            status,
+
+            {new : true  ,runValidators : true}
+
+
+        )
+
+        return res.status(200).json({
+
+
+            message : "Update SucessFuly",
+            "Attendance": saveatten
+
+        })
+
+
+    }catch (err) {
+
+        return res.status(500).json({
+
+            message: err.message
+
+        })
+
+    }
+
+
+}

@@ -8,5 +8,6 @@ routes.get('/',enrollmentController.getEnrollments)
 routes.get('/by' , authMiddleware , enrollmentController.getEnrollmentsByStudent)
 routes.post('/create', enrollmentController.createEnrollments)
 routes.post('/create/array' , enrollmentController.createEnrollmentsArray)
+routes.delete('/del' , enrollmentController.deleteEnrollment)
 
 module.exports = routes;

@@ -103,7 +103,7 @@ exports.deleteTeacher = async (req, res) => {
 
 exports.updateTeacher = async (req , res) =>{
     const {teacher_id} = req.query
-    const { first_name, last_name, email, password, department } = req.body;
+    const {first_name, last_name, email, password, department } = req.body;
 
     if(!teacher_id){
         return res.status(400).json({
