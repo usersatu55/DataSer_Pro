@@ -200,7 +200,6 @@ exports.deleteEnrollment = async (req ,res) => {
 
 
 exports.getEnrollmentsByStudent = async (req, res) => {
-
     const { student_id } = req.user;
 
     try {
@@ -218,8 +217,11 @@ exports.getEnrollmentsByStudent = async (req, res) => {
             getEnrollment.map(async (enrollment) => {
                 const course = await Course.findOne({ course_code: enrollment.course_code });
                 return {
-                    ...enrollment._doc,  
-                    course_name: course ? course.course_name : "Course not found"
+                    ...enrollment._doc,
+                    course_name: course ? course.course_name : "Course not found",
+                    instructor_fname: course ? course.instructor_fname : "Instructor not found",
+                    instructor_lname: course ? course.instructor_lname : "Instructor not found",
+                    email: course ? course.email : "Email not found"
                 };
             })
         );
