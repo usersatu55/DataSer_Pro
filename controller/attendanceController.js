@@ -229,6 +229,7 @@ exports.openAttendance = async (req, res) => {
 exports.checkInAttendance = async (req, res) => {
     
     const {course_code , student_id } = req.body;
+    const {first_name:student_fname, last_name : studnet_lname, email} = req.user;
 
     if(!course_code || !student_id) { 
 
@@ -239,7 +240,7 @@ exports.checkInAttendance = async (req, res) => {
         })
 
     }
-    const {first_name :student_fname,last_name:student_lname , email} = req.user;
+   
 
 
     try {
@@ -252,15 +253,20 @@ exports.checkInAttendance = async (req, res) => {
 
        
         const enrollment = await Enrollments.findOne({ course_code, student_id });
+        
         if (!enrollment) {
-            return res.status(404).json({ message: "Student not enrolled in this course" });
+            return res.status(404).json({ 
+                
+                message: "Student not enrolled in this course" 
+            
+            });
         }
 
         const attendance = new Attendance({
             course_code,
             student_id,
             student_fname,
-            student_lname,
+            studnet_lname,
             email,
             status: 'present', 
             date: new Date(),
@@ -279,6 +285,7 @@ exports.checkInAttendance = async (req, res) => {
     } catch (err) {
         
         return res.status(500).json({ 
+            
             message: err.message 
         
         });

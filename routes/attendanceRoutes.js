@@ -2,11 +2,13 @@ const express = require('express');
 const routes = express.Router();
 
 const attendanceController = require('../controller/attendanceController')
+const authMiddleware = require('../middleware/authMiddle');
 
 
 routes.get('/' , attendanceController.getAttendance)
 routes.get('/by' , attendanceController.getAttendanceBy)
-routes.post('/create' , attendanceController.openAttendance)
+routes.post('/open' , attendanceController.openAttendance)
+routes.post('/create' , authMiddleware ,attendanceController.checkInAttendance)
 
 
 
