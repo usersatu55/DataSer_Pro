@@ -1,6 +1,7 @@
 const { get } = require('mongoose')
 const  Attendance= require('../schema/attendanceSchema')
-const Course = require('../schema/coursesSchema')                           
+const Course = require('../schema/coursesSchema')   
+const Enrollments = require('../schema/enrollmentsSchema')                        
 
 exports.getAttendance = async (req , res) => {
 
@@ -177,7 +178,7 @@ exports.deleteAttendance = async(req , res) =>{
 }
 
 exports.openAttendance = async (req, res) => {
-    const { course_code } = req.body;
+    const {course_code } = req.body;
 
     if (!course_code) {
         return res.status(400).json({
@@ -211,7 +212,7 @@ exports.openAttendance = async (req, res) => {
             course.attendance_status = 'closed';
             await course.save();
             console.log(`Attendance for course ${course_code} is now closed`);
-        }, 600000);  
+        }, 60000);  
 
         return res.status(200).json({
             message: `Attendance for course ${course_code} is now open for 10 minutes`
@@ -225,3 +226,61 @@ exports.openAttendance = async (req, res) => {
 };
 
 
+exports.checkInAttendance = async (req, res) => {
+    
+    const {course_code , student_id } = req.body;
+
+    if(!course_code || !student_id) { 
+
+        return res.status(400).json({
+
+            message : "Bad request",
+
+        })
+
+    }
+    const {first_name :student_fname,last_name:student_lname , email} = req.user;
+
+
+    try {
+        
+        const course = await Course.findOne({ course_code });
+
+        if (!course || course.attendance_status !== 'open') {
+            return res.status(403).json({ message: "Attendance system is not open" });
+        }
+
+       
+        const enrollment = await Enrollments.findOne({ course_code, student_id });
+        if (!enrollment) {
+            return res.status(404).json({ message: "Student not enrolled in this course" });
+        }
+
+        const attendance = new Attendance({
+            course_code,
+            student_id,
+            student_fname,
+            student_lname,
+            email,
+            status: 'present', 
+            date: new Date(),
+        });
+
+        await attendance.save();
+
+        return res.status(200).json({ 
+            
+            
+            message: "Attendance checked in successfully" 
+        
+        
+        });
+
+    } catch (err) {
+        
+        return res.status(500).json({ 
+            message: err.message 
+        
+        });
+    }
+};
