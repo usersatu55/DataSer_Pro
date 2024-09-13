@@ -145,3 +145,41 @@ exports.updateCourse = async (req, res) => {
         });
     }
 };
+
+exports.getCourseBy = async (req , res) =>{
+
+
+    const {email} =req.user
+
+    try{
+
+        const getcourse = await Course.find({email})
+
+        if(!getcourse){
+
+            return res.status(404).json({
+
+                message: 'Course not found'
+
+            })
+
+
+        }
+        return res.status(200).json({
+
+            course: getcourse
+
+        })
+
+
+    }catch(err){
+
+        return res.status(500).json({
+
+            message: err.message
+
+        })
+        
+    }
+
+}

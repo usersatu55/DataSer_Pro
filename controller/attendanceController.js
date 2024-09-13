@@ -212,7 +212,7 @@ exports.openAttendance = async (req, res) => {
             course.attendance_status = 'closed';
             await course.save();
             console.log(`Attendance for course ${course_code} is now closed`);
-        }, 60000);  
+        }, 600000);  
 
         return res.status(200).json({
             message: `Attendance for course ${course_code} is now open for 10 minutes`
