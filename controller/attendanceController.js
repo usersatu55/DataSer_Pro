@@ -211,6 +211,27 @@ exports.openAttendance = async (req, res) => {
         setTimeout(async () => {
             course.attendance_status = 'closed';
             await course.save();
+
+            const enrollments = await Enrollments.find({ course_code });
+            const attendanceRecords = await Attendance.find({ course_code, status: 'present' });
+            const checkedInStudents = attendanceRecords.map(record => record.student_id);
+
+            enrollments.forEach(async (enrollment) => {
+                if (!checkedInStudents.includes(enrollment.student_id)) {
+                    const attendance = new Attendance({
+                        course_code,
+                        student_id: enrollment.student_id,
+                        student_fname: enrollment.student_fname,
+                        student_lname: enrollment.student_lname,
+                        email: enrollment.student_email,
+                        status: 'ขาดเรียน',
+                        date: new Date(),
+                    });
+                    await attendance.save();
+                }
+            });
+            
+
             console.log(`Attendance for course ${course_code} is now closed`);
         }, 600000);  
 
@@ -229,7 +250,7 @@ exports.openAttendance = async (req, res) => {
 exports.checkInAttendance = async (req, res) => {
     
     const {course_code , student_id } = req.body;
-    const {first_name:student_fname, last_name : studnet_lname, email} = req.user;
+    const {first_name:student_fname, last_name : student_lname, email} = req.user;
 
     if(!course_code || !student_id) { 
 
@@ -266,7 +287,7 @@ exports.checkInAttendance = async (req, res) => {
             course_code,
             student_id,
             student_fname,
-            studnet_lname,
+            student_lname,
             email,
             status: 'present', 
             date: new Date(),
@@ -340,5 +361,52 @@ exports.updateAttendance = async (req , res) => {
 
     }
 
+
+}
+
+exports.getAttenbyCourseCode = async (req, res) => {
+
+    const {course_code} = req.query
+
+    if(!course_code){
+
+        return res.status(400).json({
+
+            message: "bad request",
+
+        })
+
+    }
+
+    try{
+
+        const getatten = await Attendance.find({ course_code})
+
+        if(!getatten){
+
+            return res.status(404).json({
+
+                message: "Not Found",
+
+            })
+
+        }
+
+        return res.status(200).json({
+
+            "Attendance": getatten
+
+        })
+
+    }
+    catch(err){
+
+        return res.status(500).json({
+
+            message: err.message
+
+        })
+        
+    }
 
 }
