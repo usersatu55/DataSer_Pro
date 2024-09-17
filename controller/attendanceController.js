@@ -178,7 +178,7 @@ exports.deleteAttendance = async(req , res) =>{
 }
 
 exports.openAttendance = async (req, res) => {
-    const {course_code } = req.body;
+    const { course_code } = req.body;
 
     if (!course_code) {
         return res.status(400).json({
@@ -187,7 +187,6 @@ exports.openAttendance = async (req, res) => {
     }
 
     try {
-       
         const course = await Course.findOne({ course_code });
 
         if (!course) {
@@ -196,27 +195,31 @@ exports.openAttendance = async (req, res) => {
             });
         }
 
-        
         if (course.attendance_status === 'open') {
             return res.status(400).json({
                 message: "Attendance is already open for this course"
             });
         }
 
-      
         course.attendance_status = 'open';
         await course.save();
 
-       
         setTimeout(async () => {
             course.attendance_status = 'closed';
             await course.save();
 
+            const today = new Date();
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
             const enrollments = await Enrollments.find({ course_code });
-            const attendanceRecords = await Attendance.find({ course_code, status: 'present' });
+            const attendanceRecords = await Attendance.find({
+                course_code,
+                date: { $gte: startOfDay, $lt: endOfDay }
+            });
             const checkedInStudents = attendanceRecords.map(record => record.student_id);
 
-            enrollments.forEach(async (enrollment) => {
+            for (const enrollment of enrollments) {
                 if (!checkedInStudents.includes(enrollment.student_id)) {
                     const attendance = new Attendance({
                         course_code,
@@ -229,8 +232,7 @@ exports.openAttendance = async (req, res) => {
                     });
                     await attendance.save();
                 }
-            });
-            
+            }
 
             console.log(`Attendance for course ${course_code} is now closed`);
         }, 600000);  
@@ -245,6 +247,7 @@ exports.openAttendance = async (req, res) => {
         });
     }
 };
+
 
 
 exports.checkInAttendance = async (req, res) => {
@@ -289,7 +292,7 @@ exports.checkInAttendance = async (req, res) => {
             student_fname,
             student_lname,
             email,
-            status: 'present', 
+            status: 'เข้าเรียน', 
             date: new Date(),
         });
 
@@ -365,48 +368,77 @@ exports.updateAttendance = async (req , res) => {
 }
 
 exports.getAttenbyCourseCode = async (req, res) => {
+    const { course_code, student_id, status, day, month, year } = req.query;
 
-    const {course_code} = req.query
-
-    if(!course_code){
-
+    if (!course_code) {
         return res.status(400).json({
-
             message: "bad request",
-
-        })
-
+        });
     }
 
-    try{
+    let filter = { course_code };
 
-        const getatten = await Attendance.find({ course_code})
+    
+    if (student_id && student_id.trim() !== "") {
+        filter.student_id = student_id;
+    }
 
-        if(!getatten){
+    
+    if (status && status.trim() !== "") {
+        filter.status = status;
+    }
 
-            return res.status(404).json({
+    try {
+        
+        if (day || month || year) {
+            let startDate = new Date();
+            let endDate = new Date();
 
-                message: "Not Found",
+            if (year) {
+                startDate.setUTCFullYear(year, month ? month - 1 : 0, day ? day : 1);
+                endDate.setUTCFullYear(year, month ? month - 1 : 11, day ? day : 31);
+            }
 
-            })
+            startDate.setUTCHours(0, 0, 0, 0);
+            endDate.setUTCHours(23, 59, 59, 999);
 
+            filter.date = {
+                $gte: startDate,
+                $lte: endDate
+            };
         }
 
-        return res.status(200).json({
+       
+        const getatten = await Attendance.find(filter);
 
-            "Attendance": getatten
+        if (!getatten || getatten.length === 0) {
+            return res.status(404).json({
+                message: "Not Found",
+            });
+        }
 
-        })
-
-    }
-    catch(err){
-
-        return res.status(500).json({
-
-            message: err.message
-
-        })
         
-    }
+        const course = await Course.findOne({ course_code });
 
-}
+        if (!course) {
+            return res.status(404).json({
+                message: "Course Not Found",
+            });
+        }
+
+        
+        const result = getatten.map(att => ({
+            ...att._doc,
+            course_name: course.course_name
+        }));
+
+        return res.status(200).json({
+            "Attendance": result
+        });
+
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message,
+        });
+    }
+};

@@ -21,7 +21,7 @@ exports.createTeacher = async (req , res) =>{
 
     if( !teacher_id || !first_name || !last_name || !email || !password || !department){
         return res.status(400).json({
-            message:err.message
+            message: "Bad Request",
         });
     }
 
@@ -158,76 +158,61 @@ exports.updateTeacher = async (req , res) =>{
 
 
 exports.createArrayTeacher = async (req, res) => {
-    const teachers = req.body
+    const teachers = req.body;
 
-    if(!teachers || !Array.isArray(teachers) || teachers.length === 0){
-
+    
+    if (!teachers || !Array.isArray(teachers) || teachers.length === 0) {
         return res.status(401).json({
-            message:"Bad request"
-        })
-
+            message: "Bad request",
+        });
     }
 
-    try{
+    try {
+        const teachersToInsert = [];
 
-        const teachertoinsert = []
+        for (const teacher of teachers) {
+            const { teacher_id, first_name, last_name, email, password, department } = teacher;
 
-        for(const teacher of teachers){
-
-            const {teacher_id , first_name , last_name , email ,password ,  department} = teacher
-
-            if( !teacher_id || !first_name || !last_name || !email || !password || department ){
-
+            
+            if (!teacher_id || !first_name || !last_name || !email || !password || !department) {
                 return res.status(400).json({
-                    message: "Bad request"
-                })
-
+                    message: "Bad request",
+                });
             }
 
+            
+            const checkTeacher = await Teacher.findOne({ $or: [{ teacher_id }, { email }] });
 
-            const checkteacher = Teacher.findOne({$or : [{teacher_id} , {email}]})
-
-            if(checkteacher){
-
+            if (checkTeacher) {
                 return res.status(400).json({
-                    message:`Student with email ${email} or ID ${student_id} already exists`
-                })
-                 
-
+                    message: `Teacher with email ${email} or ID ${teacher_id} already exists`,
+                });
             }
 
-            const salt = await bcrypt.genSalt(10)
-            const hashpassword = await bcrypt.hashPassword(password , salt) 
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
 
-
-
-
-            teachertoinsert.push({
+            teachersToInsert.push({
                 teacher_id,
                 first_name,
                 last_name,
                 email,
-                password:hashpassword,
-                department
-            })
-
-            const saveteacher = await teachertoinsert.save()
-
-            return res.status(200).json({
-                message:"Create Teacher Suceesfuly",
-                "Teacher":saveteacher
-            })
-
-
+                password: hashedPassword,
+                department,
+                deletedAt: null, 
+            });
         }
 
-    }catch(err){
+      
+        const savedTeachers = await Teacher.insertMany(teachersToInsert);
 
-
+        return res.status(200).json({
+            message: "Teachers created successfully",
+            teachers: savedTeachers,
+        });
+    } catch (err) {
         return res.status(500).json({
-            message:err.message
-        })
-
-
+            message: err.message,
+        });
     }
-}
+};
