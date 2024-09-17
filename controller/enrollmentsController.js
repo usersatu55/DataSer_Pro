@@ -1,14 +1,13 @@
 const Enrollments = require('../schema/enrollmentsSchema')
+const Course = require('../schema/coursesSchema')
 
 
 
 exports.getEnrollments = async (req , res) =>{
 
-    const {student_id} = req.user
-
-
+   
     try{
-        const getEnrollments = await Enrollments.find({student_id})
+        const getEnrollments = await Enrollments.find()
 
         if(!getEnrollments){
 
@@ -107,7 +106,7 @@ exports.createEnrollmentsArray = async (req, res) => {
                     message: "All fields are required",
                 });
             }
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
             
             const checkEnrollment = await Enrollments.findOne({ course_code, student_id });
 
@@ -177,7 +176,7 @@ exports.deleteEnrollment = async (req ,res) => {
 
         }
 
-        const deleteEnrollment = await Enrollments.findOneAndDelete({course_id} , {student_id})
+        const deleteEnrollment = await Enrollments.findOneAndDelete({course_code} , {student_id})
 
         return res.status(200).json({
 
@@ -197,4 +196,43 @@ exports.deleteEnrollment = async (req ,res) => {
 
     }
 
+}
+
+
+exports.getEnrollmentsByStudent = async (req, res) => {
+    const { student_id } = req.user;
+
+    try {
+       
+        const getEnrollment = await Enrollments.find({ student_id });
+
+        if (!getEnrollment || getEnrollment.length === 0) {
+            return res.status(404).json({
+                message: "Enrollments not found for this student"
+            });
+        }
+
+        
+        const enrichedEnrollments = await Promise.all(
+            getEnrollment.map(async (enrollment) => {
+                const course = await Course.findOne({ course_code: enrollment.course_code });
+                return {
+                    ...enrollment._doc,
+                    course_name: course ? course.course_name : "Course not found",
+                    instructor_fname: course ? course.instructor_fname : "Instructor not found",
+                    instructor_lname: course ? course.instructor_lname : "Instructor not found",
+                    email: course ? course.email : "Email not found"
+                };
+            })
+        );
+
+        return res.status(200).json({
+            "Enrollments": enrichedEnrollments
+        });
+
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
 }

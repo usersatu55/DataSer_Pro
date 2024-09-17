@@ -7,6 +7,7 @@ const courseRoutes = require('./routes/coursesRoutes')
 const teacherRoutes = require('./routes/teachersRoutes')
 const authRoutes = require('./routes/authRoutes')
 const enrollmentRoutes = require('./routes/enrollmentsRoutes')
+const attendanceRoutes = require('./routes/attendanceRoutes')
 
 dotenv.config({ path: './.env.dev' });
 
@@ -22,6 +23,7 @@ app.use('/courses',courseRoutes)
 app.use('/teacher',teacherRoutes)
 app.use('/auth' , authRoutes)
 app.use('/enroll' , enrollmentRoutes)
+app.use('/atten',attendanceRoutes)
 
 condb.connectToDB();
 

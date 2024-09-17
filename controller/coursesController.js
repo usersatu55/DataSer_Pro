@@ -17,29 +17,25 @@ exports.getCoures = async (req , res) =>{
 
 exports.createCourse = async (req, res) => {
     
-    
-    const { course_code, course_name, course_days, course_time_slots } = req.body;
+    const { course_code, course_name, course_time_slots } = req.body;
     const { first_name: instructor_fname, last_name: instructor_lname, email } = req.user;
 
-    if (!course_code || !course_name || !course_days || !course_time_slots || course_days.length !== course_time_slots.length) {
-        
+    if (!course_code || !course_name || !course_time_slots) {
         return res.status(400).json({ message: "Bad request" });
     }
 
     try {
         const newCourse = new Course({
-            
             course_code,
             course_name,
             instructor_fname,
             instructor_lname,
             email,
-            course_days,
             course_time_slots
         });
 
         const savedCourse = await newCourse.save();
-        return res.status(200).json({
+        return res.status(201).json({
             message: "Create course successfully",
             course: savedCourse
         });
@@ -48,6 +44,7 @@ exports.createCourse = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 };
+
 
 exports.deleteCourse = async (req , res) =>{
 
@@ -99,7 +96,7 @@ exports.deleteCourse = async (req , res) =>{
 exports.updateCourse = async (req, res) => {
 
     const { course_code } = req.query; 
-    const { new_course_code, course_name, course_days, course_time } = req.body;  
+    const {new_course_code, course_name , course_time_slots} = req.body;  
 
     if (!course_code) {
         return res.status(400).json({
@@ -112,7 +109,6 @@ exports.updateCourse = async (req, res) => {
    
     if (new_course_code && new_course_code.trim() !== "") courseupdate.course_code = new_course_code;
     if (course_name && course_name.trim() !== "") courseupdate.course_name = course_name;
-    if (course_days && course_days.trim() !== "") courseupdate.course_days = course_days;
     if (course_time_slots && course_time_slots.trim() !== "") courseupdate.course_time = course_time;
 
     try {
@@ -149,3 +145,41 @@ exports.updateCourse = async (req, res) => {
         });
     }
 };
+
+exports.getCourseBy = async (req , res) =>{
+
+
+    const {email} =req.user
+
+    try{
+
+        const getcourse = await Course.find({email})
+
+        if(!getcourse){
+
+            return res.status(404).json({
+
+                message: 'Course not found'
+
+            })
+
+
+        }
+        return res.status(200).json({
+
+            course: getcourse
+
+        })
+
+
+    }catch(err){
+
+        return res.status(500).json({
+
+            message: err.message
+
+        })
+        
+    }
+
+}
