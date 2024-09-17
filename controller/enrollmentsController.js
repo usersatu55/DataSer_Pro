@@ -236,3 +236,51 @@ exports.getEnrollmentsByStudent = async (req, res) => {
         });
     }
 }
+
+exports.getEnrollmentByCourse = async(req , res) => {
+
+    const {course_code} = req.query
+
+
+    if(!course_code) {
+
+        return res.status(400).json({
+
+            message: "Bad Request"
+
+        })
+
+    }
+
+    try{
+
+        const getEnrollment = await Enrollments.find({course_code})
+
+        if(!getEnrollment){
+
+            return res.status(404).json({
+
+
+                message : "Not Found"
+
+            })
+
+            
+        }
+        return res.status(200).json({
+
+            "Enrollments": getEnrollment
+
+        })
+
+    }catch(err){
+
+        return res.status(500).json({
+
+            message : err.message
+
+        })
+
+    }
+
+}

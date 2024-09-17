@@ -6,6 +6,7 @@ const authMiddleware = require('../middleware/authMiddle');
 
 routes.get('/',enrollmentController.getEnrollments)
 routes.get('/by' , authMiddleware , enrollmentController.getEnrollmentsByStudent)
+routes.get('/byc' , enrollmentController.getEnrollmentByCourse)
 routes.post('/create', enrollmentController.createEnrollments)
 routes.post('/create/array' , enrollmentController.createEnrollmentsArray)
 routes.delete('/del' , enrollmentController.deleteEnrollment)
