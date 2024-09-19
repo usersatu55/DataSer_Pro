@@ -25,9 +25,6 @@ app.use(cors(corsOptions));
 
 
 
-
-
-
 app.use('/student',studentRoutes)
 app.use('/courses',courseRoutes)
 app.use('/teacher',teacherRoutes)
