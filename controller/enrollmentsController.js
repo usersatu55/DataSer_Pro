@@ -1,5 +1,6 @@
 const Enrollments = require('../schema/enrollmentsSchema')
 const Course = require('../schema/coursesSchema')
+const Student = require('../schema/studentSchema')
 
 
 
@@ -237,53 +238,53 @@ exports.getEnrollmentsByStudent = async (req, res) => {
     }
 }
 
-exports.getEnrollmentByCourse = async(req , res) => {
-
-    const {course_code} = req.query
-
-
-    if(!course_code) {
-
-        return res.status(400).json({
-
-            message: "Bad Request"
-
-        })
-
+exports.getEnrollmentByCourse = async (req, res) => {
+    const {course_code} = req.query;
+  
+    if (!course_code) {
+      return res.status(400).json({
+        message: "Bad Request",
+      });
     }
-
-    try{
-
-        const getEnrollment = await Enrollments.find({course_code})
-
-        if(!getEnrollment){
-
-            return res.status(404).json({
-
-
-                message : "Not Found"
-
-            })
-
-            
-        }
-        return res.status(200).json({
-
-            "Enrollments": getEnrollment
-
-        })
-
-    }catch(err){
-
-        return res.status(500).json({
-
-            message : err.message
-
-        })
-
+  
+    try {
+   
+      const getEnrollment = await Enrollments.find({ course_code });
+  
+      if (!getEnrollment || getEnrollment.length === 0) {
+        return res.status(404).json({
+          message: "Not Found",
+        });
+      }
+  
+      
+      const studentIds = getEnrollment.map((enrollment) => enrollment.student_id);
+  
+     
+      const students = await Student.find({ student_id: { $in: studentIds } });
+  
+      
+      const studentMap = {};
+      students.forEach((student) => {
+        studentMap[student.student_id] = student.department; 
+      });
+  
+      
+      const enrollmentsWithDepartment = getEnrollment.map((enrollment) => ({
+        ...enrollment._doc,
+        department: studentMap[enrollment.student_id] || "Unknown", 
+      }));
+  
+      return res.status(200).json({
+        Enrollments: enrollmentsWithDepartment,
+      });
+    } catch (err) {
+      return res.status(500).json({
+        message: err.message,
+      });
     }
-
-}
+  };
+  
 
 exports.getStudentInEnrollment = async (req, res) => {
 
