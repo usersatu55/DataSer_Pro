@@ -284,3 +284,50 @@ exports.getEnrollmentByCourse = async(req , res) => {
     }
 
 }
+
+exports.getStudentInEnrollment = async (req, res) => {
+
+    const {course_code} = req.query
+
+    if(!course_code) {
+
+        return res.status(400).json({
+
+            message : "Bad Request"
+
+        })
+
+    }
+
+    try{
+
+        const getStudent = await Enrollments.find({course_code})
+
+        if(!getStudent){
+
+            return res.status(404).json({
+
+                message : "Student Not Found"
+
+            })
+
+        }
+
+        return res.status(200).json({
+
+            "Enrollment":getStudent
+
+        })
+
+
+    }catch(err){
+
+        return res.status(500).json({
+
+            message : err.message
+
+        })
+
+    }
+
+}
