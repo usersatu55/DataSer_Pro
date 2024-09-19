@@ -217,12 +217,14 @@ exports.getEnrollmentsByStudent = async (req, res) => {
         const enrichedEnrollments = await Promise.all(
             getEnrollment.map(async (enrollment) => {
                 const course = await Course.findOne({ course_code: enrollment.course_code });
+                
                 return {
-                    ...enrollment._doc,
+                    ...enrollment._doc, 
                     course_name: course ? course.course_name : "Course not found",
                     instructor_fname: course ? course.instructor_fname : "Instructor not found",
                     instructor_lname: course ? course.instructor_lname : "Instructor not found",
-                    email: course ? course.email : "Email not found"
+                    email: course ? course.email : "Email not found",
+                    course_time_slots: course ? course.course_time_slots : []  
                 };
             })
         );
@@ -236,7 +238,8 @@ exports.getEnrollmentsByStudent = async (req, res) => {
             message: err.message
         });
     }
-}
+};
+
 
 exports.getEnrollmentByCourse = async (req, res) => {
     const {course_code} = req.query;

@@ -40,54 +40,77 @@ exports.getAttendance = async (req, res) => {
 }
 
 
-exports.getAttendanceBy = async(req , res) => {
+exports.getAttendanceBy = async (req, res) => {
+    const { course_code, status, day, month, year } = req.query; 
+    const { student_id } = req.user; 
 
-    const {course_code ,status, day, month, year} = req.query
-    const {student_id } = req.user;
-
-    if(!course_code || !status || !day || !month || !year) {
-
+    if (!course_code || !student_id) {
         return res.status(400).json({
-
             message: "Bad Request",
-
-        })
-
+        });
     }
 
-    try{
+    let filter = { course_code, student_id };
 
-        const getattendance = await Attendance.find({student_id},{ course_code})
+    if (status && status.trim() !== "") {
+        filter.status = status;
+    }
 
-        if(!getattendance){
+  
 
+    try {
+       
+        if (day || month || year) {
+            let startDate = new Date();
+            let endDate = new Date();
+      
+            if (year) {
+              const convertedYear = year; 
+              startDate.setUTCFullYear(convertedYear, 0, 1);
+              endDate.setUTCFullYear(convertedYear, 11, 31);
+      
+              if (month) {
+                startDate.setUTCMonth(month - 1, 1); 
+                endDate.setUTCMonth(month - 1, new Date(convertedYear, month, 0).getDate()); 
+              }
+      
+              if (day) {
+                startDate.setUTCDate(day);  
+                endDate.setUTCDate(day);  
+              }
+      
+              startDate.setUTCHours(0, 0, 0, 0); 
+              endDate.setUTCHours(23, 59, 59, 999); 
+      
+              filter.date = {
+                $gte: startDate,
+                $lte: endDate
+              };
+            }
+          }
+      
+        const getAttendance = await Attendance.find(filter);
+
+        if (!getAttendance || getAttendance.length === 0) {
             return res.status(404).json({
-
-                message : 'Attendance not found'
-
-            })
-
-            
+                message: "Attendance not found",
+            });
         }
+
         return res.status(200).json({
+            Attendance: getAttendance,
+        });
 
-            Attendance: getattendance
-
-        })
-
-
-    }catch(err){
-
+    } catch (err) {
         return res.status(500).json({
-
-            message: err.message
-
-        })
-
+            message: err.message,
+        });
     }
+};
 
 
-}
+
+
 
 exports.createAttendance = async (req , res) =>{
 
@@ -261,40 +284,34 @@ exports.openAttendance = async (req, res) => {
 
 
 exports.checkInAttendance = async (req, res) => {
-    
     const {course_code , student_id } = req.body;
     const {first_name:student_fname, last_name : student_lname, email} = req.user;
 
-    if(!course_code || !student_id) { 
-
+    if (!course_code || !student_id) { 
         return res.status(400).json({
-
             message : "Bad request",
-
-        })
-
+        });
     }
-   
-
 
     try {
-        
         const course = await Course.findOne({ course_code });
 
         if (!course || course.attendance_status !== 'open') {
             return res.status(403).json({ message: "Attendance system is not open" });
         }
 
-       
         const enrollment = await Enrollments.findOne({ course_code, student_id });
-        
+
         if (!enrollment) {
             return res.status(404).json({ 
-                
                 message: "Student not enrolled in this course" 
-            
             });
         }
+
+        
+        const currentDate = new Date();
+        const buddhistYear = currentDate.getFullYear() + 543; 
+        const buddhistDate = new Date(currentDate.setFullYear(buddhistYear));
 
         const attendance = new Attendance({
             course_code,
@@ -303,28 +320,22 @@ exports.checkInAttendance = async (req, res) => {
             student_lname,
             email,
             status: 'เข้าเรียน', 
-            date: new Date(),
+            date: buddhistDate, 
         });
 
         await attendance.save();
 
         return res.status(200).json({ 
-            
-            
             message: "Attendance checked in successfully" 
-        
-        
         });
 
     } catch (err) {
-        
         return res.status(500).json({ 
-            
             message: err.message 
-        
         });
     }
 };
+
 
 exports.updateAttendance = async (req , res) => {
 
@@ -402,7 +413,7 @@ exports.getAttenbyCourseCode = async (req, res) => {
         let endDate = new Date();
   
         if (year) {
-          const convertedYear = year - 543; 
+          const convertedYear = year; 
           startDate.setUTCFullYear(convertedYear, 0, 1);
           endDate.setUTCFullYear(convertedYear, 11, 31);
   
