@@ -15,9 +15,9 @@ exports.getStudent = async (req , res) => {
 
 exports.createStudent = async (req, res) => {
   
-  const { student_id, first_name, last_name, email, password } = req.body;
+  const { student_id, first_name, last_name, email, password  , department} = req.body;
 
-  if (!student_id || !first_name || !last_name || !email || !password) {
+  if (!student_id || !first_name || !last_name || !email || !password || !department) {
       return res.status(400).json({
           message: 'Bad request',
       });
@@ -41,6 +41,7 @@ exports.createStudent = async (req, res) => {
           last_name,
           email,
           password: hashedPassword,
+          department,
           deletedAt:null
         
       });
@@ -177,10 +178,10 @@ exports.createAraayStudents = async (req, res) => {
         const studentsToInsert = [];
 
         for (const student of students) {
-            const { student_id, first_name, last_name, email, password } = student;
+            const { student_id, first_name, last_name, email, password , department } = student;
 
             
-            if (!student_id || !first_name || !last_name || !email || !password) {
+            if (!student_id || !first_name || !last_name || !email || !password ,  !department) {
                 return res.status(400).json({ 
                   
                   message: "All fields are required for each student" 
@@ -207,7 +208,8 @@ exports.createAraayStudents = async (req, res) => {
                 first_name,
                 last_name,
                 email,
-                password: hashedPassword
+                password: hashedPassword,
+                department
             });
         }
 

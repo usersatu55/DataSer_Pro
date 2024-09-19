@@ -42,12 +42,22 @@ exports.getAttendance = async (req, res) => {
 
 exports.getAttendanceBy = async(req , res) => {
 
+    const {course_code ,status, day, month, year} = req.query
+    const {student_id } = req.user;
 
-    const { student_id } = req.user;
+    if(!course_code || !status || !day || !month || !year) {
+
+        return res.status(400).json({
+
+            message: "Bad Request",
+
+        })
+
+    }
 
     try{
 
-        const getattendance = await Attendance.find({student_id})
+        const getattendance = await Attendance.find({student_id},{ course_code})
 
         if(!getattendance){
 
@@ -369,105 +379,85 @@ exports.updateAttendance = async (req , res) => {
 
 exports.getAttenbyCourseCode = async (req, res) => {
     const { course_code, student_id, status, day, month, year } = req.query;
-
-   
+  
     if (!course_code) {
-        return res.status(400).json({
-            message: "bad request",
-        });
+      return res.status(400).json({
+        message: "bad request",
+      });
     }
-
-    
+  
     let filter = { course_code };
-
-    
+  
     if (student_id && student_id.trim() !== "") {
-        filter.student_id = student_id;
+      filter.student_id = student_id;
     }
-
-   
+  
     if (status && status.trim() !== "") {
-        filter.status = status;
+      filter.status = status;
     }
-
+  
     try {
-      
-        if (day || month || year) {
-            let startDate = new Date();
-            let endDate = new Date();
-
-            // ถ้ามีการระบุปี (พ.ศ.)
-            if (year) {
-                const convertedYear = year - 543;  
-
-                startDate.setUTCFullYear(convertedYear, 0, 1);  
-                endDate.setUTCFullYear(convertedYear, 11, 31); 
-
-                
-                if (month) {
-                    startDate.setUTCMonth(month - 1, 1); 
-                    endDate.setUTCMonth(month - 1, new Date(convertedYear, month, 0).getDate());  
-                }
-
-             
-                if (day) {
-                    startDate.setUTCDate(day);  
-                    endDate.setUTCDate(day);  
-                }
-
-                // ตั้งเวลาเป็นต้นและปลายวัน
-                startDate.setUTCHours(0, 0, 0, 0);  
-                endDate.setUTCHours(23, 59, 59, 999);  
-
-               
-                console.log("startDate:", startDate);
-                console.log("endDate:", endDate);
-
-                // เพิ่มช่วงวันที่ใน filter
-                filter.date = {
-                    $gte: startDate,
-                    $lte: endDate
-                };
-            }
+      if (day || month || year) {
+        let startDate = new Date();
+        let endDate = new Date();
+  
+        if (year) {
+          const convertedYear = year - 543; 
+          startDate.setUTCFullYear(convertedYear, 0, 1);
+          endDate.setUTCFullYear(convertedYear, 11, 31);
+  
+          if (month) {
+            startDate.setUTCMonth(month - 1, 1); 
+            endDate.setUTCMonth(month - 1, new Date(convertedYear, month, 0).getDate()); 
+          }
+  
+          if (day) {
+            startDate.setUTCDate(day);  
+            endDate.setUTCDate(day);  
+          }
+  
+          startDate.setUTCHours(0, 0, 0, 0); 
+          endDate.setUTCHours(23, 59, 59, 999); 
+  
+          filter.date = {
+            $gte: startDate,
+            $lte: endDate
+          };
         }
-
-        
-        const getatten = await Attendance.find(filter);
-
-       
-        if (!getatten || getatten.length === 0) {
-            return res.status(404).json({
-                message: "Not Found",
-            });
-        }
-
-        
-        const course = await Course.findOne({ course_code });
-
-        if (!course) {
-            return res.status(404).json({
-                message: "Course Not Found",
-            });
-        }
-
-       
-        const result = getatten.map(att => ({
-            ...att._doc,
-            course_name: course.course_name
-        }));
-
-      
-        return res.status(200).json({
-            "Attendance": result
+      }
+  
+      const getatten = await Attendance.find(filter);
+  
+      if (!getatten || getatten.length === 0) {
+        return res.status(404).json({
+          message: "Not Found",
         });
-
+      }
+  
+      const course = await Course.findOne({ course_code });
+  
+      if (!course) {
+        return res.status(404).json({
+          message: "Course Not Found",
+        });
+      }
+  
+      const result = getatten.map(att => ({
+        ...att._doc,
+        course_name: course.course_name
+      }));
+  
+      return res.status(200).json({
+        "Attendance": result
+      });
+  
     } catch (err) {
-      
-        return res.status(500).json({
-            message: err.message,
-        });
+      return res.status(500).json({
+        message: err.message,
+      });
     }
-};
+  };
+  
 
 
 
