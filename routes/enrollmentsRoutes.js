@@ -10,6 +10,6 @@ routes.get('/byc' , enrollmentController.getEnrollmentByCourse)
 routes.post('/create', enrollmentController.createEnrollments)
 routes.post('/create/array' , enrollmentController.createEnrollmentsArray)
 routes.delete('/del' , enrollmentController.deleteEnrollment)
-routes.get('/bys', enrollmentController.getEnrollmentsByStudent)
+routes.get('/bys', enrollmentController.getStudentInEnrollment)
 
 module.exports = routes;
