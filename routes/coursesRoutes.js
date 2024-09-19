@@ -3,6 +3,7 @@ const routes = express.Router();
 
 const authMiddleware = require('../middleware/authMiddle');
 const studentMiddleware = require('../middleware/studentMiddleware')
+const teasherMiddleware = require('../middleware/teacherMiddleware');
 const courseController = require('../controller/coursesController');
 
 

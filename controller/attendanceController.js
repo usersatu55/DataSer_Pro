@@ -370,12 +370,14 @@ exports.updateAttendance = async (req , res) => {
 exports.getAttenbyCourseCode = async (req, res) => {
     const { course_code, student_id, status, day, month, year } = req.query;
 
+   
     if (!course_code) {
         return res.status(400).json({
             message: "bad request",
         });
     }
 
+    
     let filter = { course_code };
 
     
@@ -383,34 +385,56 @@ exports.getAttenbyCourseCode = async (req, res) => {
         filter.student_id = student_id;
     }
 
-    
+   
     if (status && status.trim() !== "") {
         filter.status = status;
     }
 
     try {
-        
+      
         if (day || month || year) {
             let startDate = new Date();
             let endDate = new Date();
 
+            // ถ้ามีการระบุปี (พ.ศ.)
             if (year) {
-                startDate.setUTCFullYear(year, month ? month - 1 : 0, day ? day : 1);
-                endDate.setUTCFullYear(year, month ? month - 1 : 11, day ? day : 31);
+                const convertedYear = year - 543;  
+
+                startDate.setUTCFullYear(convertedYear, 0, 1);  
+                endDate.setUTCFullYear(convertedYear, 11, 31); 
+
+                
+                if (month) {
+                    startDate.setUTCMonth(month - 1, 1); 
+                    endDate.setUTCMonth(month - 1, new Date(convertedYear, month, 0).getDate());  
+                }
+
+             
+                if (day) {
+                    startDate.setUTCDate(day);  
+                    endDate.setUTCDate(day);  
+                }
+
+                // ตั้งเวลาเป็นต้นและปลายวัน
+                startDate.setUTCHours(0, 0, 0, 0);  
+                endDate.setUTCHours(23, 59, 59, 999);  
+
+               
+                console.log("startDate:", startDate);
+                console.log("endDate:", endDate);
+
+                // เพิ่มช่วงวันที่ใน filter
+                filter.date = {
+                    $gte: startDate,
+                    $lte: endDate
+                };
             }
-
-            startDate.setUTCHours(0, 0, 0, 0);
-            endDate.setUTCHours(23, 59, 59, 999);
-
-            filter.date = {
-                $gte: startDate,
-                $lte: endDate
-            };
         }
 
-       
+        
         const getatten = await Attendance.find(filter);
 
+       
         if (!getatten || getatten.length === 0) {
             return res.status(404).json({
                 message: "Not Found",
@@ -426,19 +450,71 @@ exports.getAttenbyCourseCode = async (req, res) => {
             });
         }
 
-        
+       
         const result = getatten.map(att => ({
             ...att._doc,
             course_name: course.course_name
         }));
 
+      
         return res.status(200).json({
             "Attendance": result
         });
 
     } catch (err) {
+      
         return res.status(500).json({
             message: err.message,
         });
     }
 };
+
+
+
+
+
+exports.getAttendanceByStudentAndCourse = async (req, res) => {
+
+    const {course_code} = req.query
+    const {student_id} = req.user
+
+    if(!course_code){
+
+        return res.status(400).json({
+
+            message: "Bad Request",
+
+        })
+
+    }
+
+    try{
+        const getAttendance = await Attendance.find({course_code} , {student_id})
+
+        if(!getAttendance){
+
+            return res.status({
+
+                message : "Not Found"
+
+            })
+
+
+        }
+        return res.status(200).json({
+
+            "Attendance": getAttendance
+
+        })
+
+    }catch (err) {
+
+        return res.status(500).json({
+
+            message: err.message
+
+        })
+
+    }
+
+}
