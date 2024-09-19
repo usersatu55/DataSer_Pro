@@ -35,8 +35,6 @@ app.use('/auth' , authRoutes)
 app.use('/enroll' , enrollmentRoutes)
 app.use('/atten',attendanceRoutes)
 
-
-
 condb.connectToDB();
 
 const PORT = process.env.PORT || 3000;
