@@ -102,7 +102,7 @@ exports.deleteTeacher = async (req, res) => {
 }
 
 exports.updateTeacher = async (req , res) =>{
-    const {teacher_id} = req.query
+    const {teacher_id} = req.user;
     const {first_name, last_name, email, password, department } = req.body;
 
     if(!teacher_id){
@@ -115,11 +115,18 @@ exports.updateTeacher = async (req , res) =>{
 
     const updateTeacher = {}
 
-    if(first_name) updateTeacher.first_name = first_name
-    if(last_name) updateTeacher.last_name = last_name
-    if(email) updateTeacher.email = email
-    if(password) updateTeacher.password = password
-    if(department) updateTeacher.department = department
+    if(first_name && first_name.trim() !== "") updateTeacher.first_name = first_name
+    if(last_name && last_name.trim() !== "") updateTeacher.last_name = last_name
+    if(email && email.trim() !== "") updateTeacher.email = email
+    if(password && password.trim() !== ""){
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        updateTeacher.password = hashedPassword; 
+
+
+    }
+    if(department && department.trim() !== "") updateTeacher.department = department
 
     try{
 
@@ -216,3 +223,5 @@ exports.createArrayTeacher = async (req, res) => {
         });
     }
 };
+
+

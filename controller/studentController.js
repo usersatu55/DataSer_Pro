@@ -100,7 +100,7 @@ exports.deleteStudent = async (req, res) => {
 
 
 exports.updateStudent = async (req, res) => {
-  const { student_id } = req.query; 
+  const { student_id } = req.user; 
   const { first_name, last_name, email, password, new_student_id } = req.body; 
 
   if (!student_id) {

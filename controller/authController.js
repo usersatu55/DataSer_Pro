@@ -48,6 +48,7 @@ exports.login = async (req, res) => {
                 {
                     id: teacher._id,
                     userType: 'teacher',
+                    teacher_id: teacher.teacher_id,
                     first_name: teacher.first_name, 
                     last_name: teacher.last_name,   
                     email: teacher.email            
