@@ -96,6 +96,16 @@ exports.getAttendanceBy = async (req, res) => {
                 message: "Attendance not found",
             });
         }
+        const formatDateToBuddhist = (date) => {
+            const currentDate = new Date(date);
+            const day = String(currentDate.getDate()).padStart(2, '0');
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const year = currentDate.getFullYear() + 543;
+            const hours = String(currentDate.getHours()).padStart(2, '0');
+            const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+            const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+          };
 
         return res.status(200).json({
             Attendance: getAttendance,
@@ -245,20 +255,26 @@ exports.openAttendance = async (req, res) => {
             const startOfDay = new Date(today.setHours(0, 0, 0, 0));
             const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-            
+           
             const enrollments = await Enrollments.find({ course_code });
+
+        
             const attendanceRecords = await Attendance.find({
                 course_code,
                 date: { $gte: startOfDay, $lt: endOfDay },
                 status: 'เข้าเรียน'
             });
 
-         
+            
             const checkedInStudentsSet = new Set(attendanceRecords.map(record => record.student_id));
 
-         
+            
             const attendancePromises = enrollments.map(async (enrollment) => {
                 if (!checkedInStudentsSet.has(enrollment.student_id)) {
+                  
+                    const currentDate = new Date();
+                   
+
                     const attendance = new Attendance({
                         course_code,
                         student_id: enrollment.student_id,
@@ -266,7 +282,7 @@ exports.openAttendance = async (req, res) => {
                         student_lname: enrollment.student_lname,
                         email: enrollment.student_email,
                         status: 'ขาดเรียน',
-                        date: new Date(),
+                        date: currentDate, 
                     });
                     return await attendance.save();
                 }
@@ -316,8 +332,10 @@ exports.checkInAttendance = async (req, res) => {
             });
         }
 
-      
-        const currentDate = new Date(); 
+        
+        const currentDate = new Date();
+
+        
 
         const attendance = new Attendance({
             course_code,
@@ -326,7 +344,7 @@ exports.checkInAttendance = async (req, res) => {
             student_lname,
             email,
             status: 'เข้าเรียน',
-            date: currentDate, 
+            date: currentDate,  
         });
 
         await attendance.save();
@@ -341,7 +359,6 @@ exports.checkInAttendance = async (req, res) => {
         });
     }
 };
-
 
 
 exports.updateAttendance = async (req , res) => {
@@ -420,22 +437,22 @@ exports.getAttenbyCourseCode = async (req, res) => {
         let endDate = new Date();
   
         if (year) {
-          const convertedYear = year; 
+          const convertedYear = year;
           startDate.setUTCFullYear(convertedYear, 0, 1);
           endDate.setUTCFullYear(convertedYear, 11, 31);
   
           if (month) {
-            startDate.setUTCMonth(month - 1, 1); 
-            endDate.setUTCMonth(month - 1, new Date(convertedYear, month, 0).getDate()); 
+            startDate.setUTCMonth(month - 1, 1);
+            endDate.setUTCMonth(month - 1, new Date(convertedYear, month, 0).getDate());
           }
   
           if (day) {
-            startDate.setUTCDate(day);  
-            endDate.setUTCDate(day);  
+            startDate.setUTCDate(day);
+            endDate.setUTCDate(day);
           }
   
-          startDate.setUTCHours(0, 0, 0, 0); 
-          endDate.setUTCHours(23, 59, 59, 999); 
+          startDate.setUTCHours(0, 0, 0, 0);
+          endDate.setUTCHours(23, 59, 59, 999);
   
           filter.date = {
             $gte: startDate,
@@ -460,9 +477,22 @@ exports.getAttenbyCourseCode = async (req, res) => {
         });
       }
   
+     
+      const formatDateToBuddhist = (date) => {
+        const currentDate = new Date(date);
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const year = currentDate.getFullYear() + 543;
+        const hours = String(currentDate.getHours()).padStart(2, '0');
+        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+        const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+      };
+  
       const result = getatten.map(att => ({
         ...att._doc,
-        course_name: course.course_name
+        course_name: course.course_name,
+        date: formatDateToBuddhist(att.date) 
       }));
   
       return res.status(200).json({
