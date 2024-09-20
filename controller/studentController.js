@@ -99,66 +99,56 @@ exports.deleteStudent = async (req, res) => {
 }
 
 
-exports.updateStudent = async (req , res) =>{
+exports.updateStudent = async (req, res) => {
+  const { student_id } = req.query; 
+  const { first_name, last_name, email, password, new_student_id } = req.body; 
 
-    const {student_id} = req.query
-    const {first_name , last_name , email , password} = req.body
+  if (!student_id) {
+    return res.status(400).json({
+      message: "Bad Request"
+    });
+  }
 
-    if(!student_id){
-
-      return res.status(400).json({
-        message:"Bad Request"
-      })
-
-    }
-
-    const updatestudent = {}
-
-    if(first_name && first_name.trim() !== "") updatestudent.first_name = first_name
-    if(last_name && last_name.trim() !== "") updatestudent.last_name = last_name
-    if(email && email.trim() !== "") updatestudent.email = email
-    if(password && password.trim() =="")updatestudent.password = password
-
-
-    try{
-
-      const newstudent = await Student.findOneAndUpdate(
-        {student_id},
-        updatestudent,
-
-        {new:true , runValidators :true}
-      )
-
-      if( !newstudent){
-
-        return res.status(404).json({
-
-          message : "Student not found",
-
-        })
-
-      }
-
-      return res.status(200).json({
-
-        message : "Student updated successfully",
-        "Student" :newstudent
-
-      })
-
-
-    }catch(err){
-
-      return res.status(500).json({
-        message: err.message
-      })
-
-    }
-
-  
+  const updatestudent = {};
 
  
-}
+  if (first_name && first_name.trim() !== "") updatestudent.first_name = first_name;
+  if (last_name && last_name.trim() !== "") updatestudent.last_name = last_name;
+  if (email && email.trim() !== "") updatestudent.email = email;
+  if (new_student_id && new_student_id.trim() !== "") updatestudent.student_id = new_student_id; 
+  
+  
+  if (password && password.trim() !== "") {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    updatestudent.password = hashedPassword; 
+  }
+
+  try {
+    const newstudent = await Student.findOneAndUpdate(
+      { student_id },  
+      updatestudent,   
+      { new: true, runValidators: true }  
+    );
+
+    if (!newstudent) {
+      return res.status(404).json({
+        message: "Student not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Student updated successfully",
+      student: newstudent
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message
+    });
+  }
+};
+
 
 
 exports.createAraayStudents = async (req, res) => {
