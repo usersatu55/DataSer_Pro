@@ -16,11 +16,11 @@ exports.getCoures = async (req , res) =>{
 
 
 exports.createCourse = async (req, res) => {
-    
-    const { course_code, course_name, course_time_slots } = req.body;
+    const { course_code, course_name, course_time_slots, seat_limit } = req.body;
     const { first_name: instructor_fname, last_name: instructor_lname, email } = req.user;
 
-    if (!course_code || !course_name || !course_time_slots) {
+   
+    if (!course_code || !course_name || !course_time_slots || !seat_limit) {
         return res.status(400).json({ message: "Bad request" });
     }
 
@@ -31,12 +31,14 @@ exports.createCourse = async (req, res) => {
             instructor_fname,
             instructor_lname,
             email,
-            course_time_slots
+            course_time_slots,
+            seat_limit,  
+            current_enrollments: 0
         });
 
         const savedCourse = await newCourse.save();
         return res.status(201).json({
-            message: "Create course successfully",
+            message: "Course created successfully",
             course: savedCourse
         });
 
@@ -44,6 +46,7 @@ exports.createCourse = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 };
+
 
 
 exports.deleteCourse = async (req , res) =>{

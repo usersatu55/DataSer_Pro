@@ -43,6 +43,14 @@ const coursesSchema = new mongoose.Schema({
     attendance_status: { 
         type: String, 
         default: 'closed' 
+    },
+    seat_limit: {
+        type: Number,
+        required: true
+    },
+    current_enrollments: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

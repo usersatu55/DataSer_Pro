@@ -38,10 +38,10 @@ exports.getEnrollments = async (req , res) =>{
 }
 
 exports.createEnrollments = async (req, res) => {
+    const { course_code} = req.body;
+    const { student_id, first_name:student_fname,last_name:student_lname, email:student_email} = req.user
 
-    const { course_code, student_id, student_fname, student_lname, student_email } = req.body;
-
-   
+    
     if (!course_code || !student_id || !student_fname || !student_lname || !student_email) {
         return res.status(400).json({
             message: "Bad request",
@@ -49,7 +49,23 @@ exports.createEnrollments = async (req, res) => {
     }
 
     try {
+     
+        const course = await Course.findOne({ course_code });
+
+        if (!course) {
+            return res.status(404).json({
+                message: "Course not found",
+            });
+        }
+
         
+        if (course.current_enrollments >= course.seat_limit) {
+            return res.status(400).json({
+                message: "Course enrollment limit has been reached",
+            });
+        }
+
+      
         const checkEnrollment = await Enrollments.findOne({ course_code, student_id });
 
         if (checkEnrollment) {
@@ -58,17 +74,21 @@ exports.createEnrollments = async (req, res) => {
             });
         }
 
-        
+       
         const newEnrollment = new Enrollments({
             course_code,
             student_id,
             student_fname,
             student_lname,
             student_email,
-            deletedAt:null
+            deletedAt: null
         });
 
         const savedEnrollment = await newEnrollment.save();
+
+       
+        course.current_enrollments += 1;
+        await course.save();
 
         return res.status(200).json({
             message: "Enrollment saved successfully",
@@ -81,6 +101,7 @@ exports.createEnrollments = async (req, res) => {
         });
     }
 };
+
 
 
 exports.createEnrollmentsArray = async (req, res) => {
