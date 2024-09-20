@@ -245,15 +245,20 @@ exports.openAttendance = async (req, res) => {
             const startOfDay = new Date(today.setHours(0, 0, 0, 0));
             const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
+            
             const enrollments = await Enrollments.find({ course_code });
             const attendanceRecords = await Attendance.find({
                 course_code,
-                date: { $gte: startOfDay, $lt: endOfDay }
+                date: { $gte: startOfDay, $lt: endOfDay },
+                status: 'เข้าเรียน'
             });
-            const checkedInStudents = attendanceRecords.map(record => record.student_id);
 
-            for (const enrollment of enrollments) {
-                if (!checkedInStudents.includes(enrollment.student_id)) {
+         
+            const checkedInStudentsSet = new Set(attendanceRecords.map(record => record.student_id));
+
+         
+            const attendancePromises = enrollments.map(async (enrollment) => {
+                if (!checkedInStudentsSet.has(enrollment.student_id)) {
                     const attendance = new Attendance({
                         course_code,
                         student_id: enrollment.student_id,
@@ -263,12 +268,14 @@ exports.openAttendance = async (req, res) => {
                         status: 'ขาดเรียน',
                         date: new Date(),
                     });
-                    await attendance.save();
+                    return await attendance.save();
                 }
-            }
+            });
+
+            await Promise.all(attendancePromises);
 
             console.log(`Attendance for course ${course_code} is now closed`);
-        }, 600000);  
+        }, 60000);  
 
         return res.status(200).json({
             message: `Attendance for course ${course_code} is now open for 10 minutes`
@@ -283,13 +290,14 @@ exports.openAttendance = async (req, res) => {
 
 
 
-exports.checkInAttendance = async (req, res) => {
-    const {course_code , student_id } = req.body;
-    const {first_name:student_fname, last_name : student_lname, email} = req.user;
 
-    if (!course_code || !student_id) { 
+exports.checkInAttendance = async (req, res) => {
+    const { course_code, student_id } = req.body;
+    const { first_name: student_fname, last_name: student_lname, email } = req.user;
+
+    if (!course_code || !student_id) {
         return res.status(400).json({
-            message : "Bad request",
+            message: "Bad request",
         });
     }
 
@@ -303,15 +311,13 @@ exports.checkInAttendance = async (req, res) => {
         const enrollment = await Enrollments.findOne({ course_code, student_id });
 
         if (!enrollment) {
-            return res.status(404).json({ 
-                message: "Student not enrolled in this course" 
+            return res.status(404).json({
+                message: "Student not enrolled in this course"
             });
         }
 
-        
-        const currentDate = new Date();
-        const buddhistYear = currentDate.getFullYear() + 543; 
-        const buddhistDate = new Date(currentDate.setFullYear(buddhistYear));
+      
+        const currentDate = new Date(); 
 
         const attendance = new Attendance({
             course_code,
@@ -319,22 +325,23 @@ exports.checkInAttendance = async (req, res) => {
             student_fname,
             student_lname,
             email,
-            status: 'เข้าเรียน', 
-            date: buddhistDate, 
+            status: 'เข้าเรียน',
+            date: currentDate, 
         });
 
         await attendance.save();
 
-        return res.status(200).json({ 
-            message: "Attendance checked in successfully" 
+        return res.status(200).json({
+            message: "Attendance checked in successfully"
         });
 
     } catch (err) {
-        return res.status(500).json({ 
-            message: err.message 
+        return res.status(500).json({
+            message: err.message
         });
     }
 };
+
 
 
 exports.updateAttendance = async (req , res) => {
