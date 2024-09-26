@@ -11,6 +11,7 @@ routes.post('/create' , teacherController.createTeacher)
 routes.post('/create/array' ,teacherController.createArrayTeacher)
 routes.delete('/del' , teacherController.deleteTeacher)
 routes.put('/update' ,authMiddleware,teacherController.updateTeacher)
+routes.put('/updateS', teacherController.teacherUpdateStudent)
 
 
 module.exports = routes;

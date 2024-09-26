@@ -1,4 +1,5 @@
 const  Teacher  = require('../schema/teacherSchema')
+const Student = require('../schema/studentSchema')
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
@@ -164,6 +165,7 @@ exports.updateTeacher = async (req , res) =>{
 
 
 
+
 exports.createArrayTeacher = async (req, res) => {
     const teachers = req.body;
 
@@ -225,3 +227,51 @@ exports.createArrayTeacher = async (req, res) => {
 };
 
 
+exports.teacherUpdateStudent = async (req, res) => {
+
+    const {student_id} = req.query;
+    const {first_name, last_name, email, password, new_student_id, department } = req.body;
+  
+    if (!student_id) {
+      return res.status(400).json({ message: "Bad Request: student_id is required" });
+    }
+  
+    const updateFields = {};
+  
+    
+    if (first_name && first_name.trim() !== "") updateFields.first_name = first_name;
+    if (last_name && last_name.trim() !== "") updateFields.last_name = last_name;
+    if (email && email.trim() !== "") updateFields.email = email;
+    if (department && department.trim() !== "") updateFields.department = department;
+    if (new_student_id && new_student_id.trim() !== "") updateFields.student_id = new_student_id;
+  
+    
+    if (password && password.trim() !== "") {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      updateFields.password = hashedPassword;
+    }
+  
+    try {
+      
+      const updatedStudent = await Student.findOneAndUpdate(
+        {student_id}, 
+        updateFields,  
+        { new: true, runValidators: true } 
+      );
+  
+      if (!updatedStudent) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+  
+     
+      return res.status(200).json({
+        message: "Student updated successfully",
+        student: updatedStudent
+      });
+  
+    } catch (err) {
+      
+      return res.status(500).json({ message: err.message });
+    }
+  };

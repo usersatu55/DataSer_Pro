@@ -200,6 +200,18 @@ exports.deleteEnrollment = async (req ,res) => {
 
         const deleteEnrollment = await Enrollments.findOneAndDelete({course_code} , {student_id})
 
+        const updateCourse = await Course.findOneAndUpdate(
+            { course_code },
+            { $inc: { current_enrollments: -1 } },
+            { new: true }
+        );
+
+        if (!updateCourse) {
+            return res.status(404).json({
+                message: "Course not found"
+            });
+        }
+
         return res.status(200).json({
 
             message: "Enrollment deleted successfully",

@@ -1,6 +1,8 @@
 const Student = require('../schema/studentSchema')
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const Enrollments = require('../schema/enrollmentsSchema')
+const Course = require('../schema/coursesSchema')
 
 exports.getStudent = async (req , res) => {
 
@@ -214,3 +216,52 @@ exports.createAraayStudents = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 }
+
+exports.studentDeleteEnrollment = async (req, res) => {
+  const { student_id } = req.user; 
+  const { course_code } = req.body; 
+
+  
+  if (!course_code) {
+    return res.status(400).json({
+      message: "Bad request: Missing course_code or student_id",
+    });
+  }
+
+  try {
+    
+    const checkEnrollment = await Enrollments.findOne({ course_code, student_id });
+
+    if (!checkEnrollment) {
+      return res.status(404).json({
+        message: "The student has not taken this course",
+      });
+    }
+
+   
+    const deleteEnrollment = await Enrollments.findOneAndDelete({ course_code, student_id });
+
+  
+    const updateCourse = await Course.findOneAndUpdate(
+      { course_code },
+      { $inc: { current_enrollments: -1 } }, 
+      { new: true }
+    );
+
+    if (!updateCourse) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Enrollment deleted successfully",
+      Enrollment: deleteEnrollment,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+};

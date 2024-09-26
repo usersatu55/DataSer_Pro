@@ -9,5 +9,6 @@ routes.post('/create', studentController.createStudent);
 routes.post('/create/array', studentController.createAraayStudents);
 routes.delete('/del' , studentController.deleteStudent);
 routes.put('/update' ,authMiddleware , studentController.updateStudent)
+routes.delete('/delEn', authMiddleware , studentController.studentDeleteEnrollment)
 
 module.exports = routes;
