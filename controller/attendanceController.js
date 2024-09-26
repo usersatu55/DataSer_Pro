@@ -96,16 +96,16 @@ exports.getAttendanceBy = async (req, res) => {
                 message: "Attendance not found",
             });
         }
-        const formatDateToBuddhist = (date) => {
-            const currentDate = new Date(date);
-            const day = String(currentDate.getDate()).padStart(2, '0');
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-            const year = currentDate.getFullYear() + 543;
-            const hours = String(currentDate.getHours()).padStart(2, '0');
-            const minutes = String(currentDate.getMinutes()).padStart(2, '0');
-            const seconds = String(currentDate.getSeconds()).padStart(2, '0');
-            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-          };
+        // const formatDateToBuddhist = (date) => {
+        //     const currentDate = new Date(date);
+        //     const day = String(currentDate.getDate()).padStart(2, '0');
+        //     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        //     const year = currentDate.getFullYear() + 543;
+        //     const hours = String(currentDate.getHours()).padStart(2, '0');
+        //     const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+        //     const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+        //     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        //   };
 
         return res.status(200).json({
             Attendance: getAttendance,
@@ -478,21 +478,21 @@ exports.getAttenbyCourseCode = async (req, res) => {
       }
   
      
-      const formatDateToBuddhist = (date) => {
-        const currentDate = new Date(date);
-        const day = String(currentDate.getDate()).padStart(2, '0');
-        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-        const year = currentDate.getFullYear() + 543;
-        const hours = String(currentDate.getHours()).padStart(2, '0');
-        const minutes = String(currentDate.getMinutes()).padStart(2, '0');
-        const seconds = String(currentDate.getSeconds()).padStart(2, '0');
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-      };
+    //   const formatDateToBuddhist = (date) => {
+    //     const currentDate = new Date(date);
+    //     const day = String(currentDate.getDate()).padStart(2, '0');
+    //     const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    //     const year = currentDate.getFullYear() + 543;
+    //     const hours = String(currentDate.getHours()).padStart(2, '0');
+    //     const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+    //     const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+    //     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    //   };
   
       const result = getatten.map(att => ({
         ...att._doc,
         course_name: course.course_name,
-        date: formatDateToBuddhist(att.date) 
+        
       }));
   
       return res.status(200).json({
