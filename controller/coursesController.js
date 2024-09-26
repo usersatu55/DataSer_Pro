@@ -25,6 +25,19 @@ exports.createCourse = async (req, res) => {
     }
 
     try {
+
+        const checkcourse = await Course.findOne({course_code})
+
+        if(checkcourse){
+
+            return res.status(400).json({
+
+                "message": "Course already exists"
+
+            })
+
+        }
+
         const newCourse = new Course({
             course_code,
             course_name,
