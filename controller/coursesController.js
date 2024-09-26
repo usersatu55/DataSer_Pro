@@ -32,7 +32,7 @@ exports.createCourse = async (req, res) => {
 
             return res.status(400).json({
 
-                "message": "Course already exists"
+                "message": "รหัสคอร์สนี้ถูกใช้ไปเเล้ว"
 
             })
 
