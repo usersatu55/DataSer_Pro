@@ -4,12 +4,12 @@ const enrollmentController = require('../controller/enrollmentsController')
 const authMiddleware = require('../middleware/authMiddle');
 
 
-routes.get('/',enrollmentController.getEnrollments)
+routes.get('/',authMiddleware , enrollmentController.getEnrollments)
 routes.get('/by' , authMiddleware , enrollmentController.getEnrollmentsByStudent)
-routes.get('/byc' , enrollmentController.getEnrollmentByCourse)
+routes.get('/byc' ,authMiddleware, enrollmentController.getEnrollmentByCourse)
 routes.post('/create', authMiddleware ,enrollmentController.createEnrollments)
-routes.post('/create/array' , enrollmentController.createEnrollmentsArray)
-routes.delete('/del' , enrollmentController.deleteEnrollment)
-routes.get('/bys', enrollmentController.getStudentInEnrollment)
+routes.post('/create/array' ,authMiddleware, enrollmentController.createEnrollmentsArray)
+routes.delete('/del' ,authMiddleware, enrollmentController.deleteEnrollment)
+routes.get('/bys', authMiddleware ,enrollmentController.getStudentInEnrollment)
 
 module.exports = routes;

@@ -6,12 +6,12 @@ const teacherController = require('../controller/teachersController')
 const authMiddleware = require('../middleware/authMiddle');
 
 
-routes.get('/' , teacherController.getTeacher)
-routes.post('/create' , teacherController.createTeacher)
+routes.get('/' ,authMiddleware, teacherController.getTeacher)
+routes.post('/create' ,authMiddleware, teacherController.createTeacher)
 routes.post('/create/array' ,teacherController.createArrayTeacher)
-routes.delete('/del' , teacherController.deleteTeacher)
+routes.delete('/del' ,authMiddleware , teacherController.deleteTeacher)
 routes.put('/update' ,authMiddleware,teacherController.updateTeacher)
-routes.put('/updateS', teacherController.teacherUpdateStudent)
+routes.put('/updateS', authMiddleware,teacherController.teacherUpdateStudent)
 
 
 module.exports = routes;
