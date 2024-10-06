@@ -8,14 +8,14 @@ const courseController = require('../controller/coursesController');
 
 
 
-routes.get('/',courseController.getCoures)
+routes.get('/', courseController.getCoures)
 routes.post('/create',authMiddleware, courseController.createCourse)
-routes.delete('/del' , authMiddleware , courseController.deleteCourse)
-routes.put('/update' ,authMiddleware , courseController.updateCourse)
+routes.delete('/del' , courseController.deleteCourse)
+routes.put('/update' , courseController.updateCourse)
 
 
 routes.get('/by' , authMiddleware , courseController.getCourseBy)
-routes.get('/byc' ,authMiddleware, courseController.getCourseByCode)
+routes.get('/byc' , courseController.getCourseByCode)
 
 
 
